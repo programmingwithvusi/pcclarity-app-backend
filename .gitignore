@@ -483,3 +483,4 @@ $RECYCLE.BIN/
 
 # app settings scretes
 appsettings.Development.json
+.gitignored
