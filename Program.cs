@@ -14,17 +14,17 @@ builder.Services.AddHttpClient();
 // CORS — allow your frontend origin
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("netlifyPolicy", policy =>
+    options.AddPolicy("FrontendPolicy", policy =>
     {
         policy
             .WithOrigins(
-                "http://localhost:3000", // local dev
-                "http://localhost:5173", // prod
-                "https://pcclarity-app.netlify.app" // production — replace this
+                "http://localhost:3000",           // local dev
+                "http://localhost:5173",           // local Vite dev
+                "https://pcclarity-app.vercel.app" // Vercel production
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();   // if you need cookies/auth
+            .AllowCredentials();
     });
 });
 
