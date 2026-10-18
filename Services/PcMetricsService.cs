@@ -1,4 +1,6 @@
+#if WINDOWS
 using System.Management;
+#endif
 using System.Runtime.Versioning;
 using PCClarity.API.Models;
 
@@ -36,6 +38,7 @@ public class PcMetricsService
 
     // ── Windows (real data via WMI) ──────────────────────────
 
+#if WINDOWS
     [SupportedOSPlatform("windows")]
     private PcHealthReport BuildWindowsReport()
     {
@@ -98,7 +101,6 @@ public class PcMetricsService
             free  += Convert.ToInt64(d["FreeSpace"]);
         }
 
-        // Estimate junk: size of Windows\Temp + user Temp folder
         junk += GetFolderSize(Path.GetTempPath());
         junk += GetFolderSize(@"C:\Windows\Temp");
 
@@ -128,7 +130,6 @@ public class PcMetricsService
     {
         var programs = new List<string>();
 
-        // HKCU run keys
         var runKeys = new[]
         {
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
@@ -142,7 +143,6 @@ public class PcMetricsService
             programs.AddRange(reg.GetValueNames());
         }
 
-        // HKLM run keys (requires read access)
         foreach (var key in runKeys)
         {
             using var reg = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(key);
@@ -152,6 +152,12 @@ public class PcMetricsService
 
         return new StartupMetrics { Count = programs.Count, Programs = programs };
     }
+#else
+    // On Linux/macOS the Windows branch is compiled out entirely.
+    // GetReport() already routes non-Windows to BuildMockReport() at runtime,
+    // but we need a stub so the compiler is satisfied.
+    private PcHealthReport BuildWindowsReport() => BuildMockReport();
+#endif
 
     private static long GetFolderSize(string path)
     {
@@ -169,10 +175,10 @@ public class PcMetricsService
         StartupMetrics startup, double junkGb)
     {
         int score = 100;
-        score -= Math.Min(25, disk.UsedPercent - 50);   // penalise >50% disk
-        score -= Math.Min(20, (int)(junkGb * 4));        // penalise junk
-        score -= Math.Min(20, (startup.Count - 5) * 2); // penalise startup items
-        score -= Math.Min(15, ram.UsedPercent - 60);     // penalise >60% RAM
+        score -= Math.Min(25, disk.UsedPercent - 50);
+        score -= Math.Min(20, (int)(junkGb * 4));
+        score -= Math.Min(20, (startup.Count - 5) * 2);
+        score -= Math.Min(15, ram.UsedPercent - 60);
         return Math.Clamp(score, 0, 100);
     }
 

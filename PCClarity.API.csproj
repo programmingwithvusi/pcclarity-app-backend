@@ -4,6 +4,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <!-- Define WINDOWS constant only when actually building on Windows -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="Services\SubscriptionService.cs" />
   </ItemGroup>
@@ -11,7 +16,7 @@
   <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Stripe.net" Version="45.0.0" />
-    <PackageReference Include="System.Management" Version="8.0.0" Condition="'$(RuntimeIdentifier)' == 'win-x64' Or '$(OS)' == 'Windows_NT'" />
+    <PackageReference Include="System.Management" Version="8.0.0" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
